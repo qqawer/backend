@@ -8,41 +8,45 @@ function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [pageInfo, setPageInfo] = useState<Page<Product> | null>(null);
   const [searchParams] = useSearchParams();
-const currentPage = searchParams.has("page") ? Number(searchParams.get("page")) : 0;
-
-// 修正 getPageParam 函数（确保页码有效）
-const getPageParam = () => {
-  // 过滤非数字/无效的页码
-  const validCurrentPage = typeof currentPage === 'number' && !isNaN(currentPage) 
-    ? currentPage 
+  const currentPage = searchParams.has("page")
+    ? Number(searchParams.get("page"))
     : 0;
 
-  if (!pageInfo) {
-    return Math.max(0, validCurrentPage); // 确保页码不小于0
-  }
-  return Math.max(0, Math.min(validCurrentPage, pageInfo.totalPages - 1));
-};
+  // 修正 getPageParam 函数（确保页码有效）
+  const getPageParam = () => {
+    // 过滤非数字/无效的页码
+    const validCurrentPage =
+      typeof currentPage === "number" && !isNaN(currentPage) ? currentPage : 0;
 
-// 修正 pageSize 的获取方式（关键！）
-const pageSize = searchParams.has("size") ? Number(searchParams.get("size")) : undefined;
+    if (!pageInfo) {
+      return Math.max(0, validCurrentPage); // 确保页码不小于0
+    }
+    return Math.max(0, Math.min(validCurrentPage, pageInfo.totalPages - 1));
+  };
 
-// 修正 getSizeParam 函数（确保无效值被过滤）
-const getSizeParam = () => {
-  // 过滤非数字/无效的 size 值
-  const validPageSize = typeof pageSize === 'number' && !isNaN(pageSize) && pageSize > 0 
-    ? pageSize 
+  // 修正 pageSize 的获取方式（关键！）
+  const pageSize = searchParams.has("size")
+    ? Number(searchParams.get("size"))
     : undefined;
 
-  // 优先用 URL 中的有效 size → 再用后端返回的 size → 最后用默认值 10
-  const size = validPageSize ?? pageInfo?.size ?? 10;
-  
-  // 范围限制（保持原逻辑，但此时 size 已经是有效値）
-  return Math.max(5, Math.min(size, 100));
-};
+  // 修正 getSizeParam 函数（确保无效值被过滤）
+  const getSizeParam = () => {
+    // 过滤非数字/无效的 size 值
+    const validPageSize =
+      typeof pageSize === "number" && !isNaN(pageSize) && pageSize > 0
+        ? pageSize
+        : undefined;
+
+    // 优先用 URL 中的有效 size → 再用后端返回的 size → 最后用默认值 10
+    const size = validPageSize ?? pageInfo?.size ?? 10;
+
+    // 范围限制（保持原逻辑，但此时 size 已经是有效値）
+    return Math.max(5, Math.min(size, 100));
+  };
 
   const pageNumbers = [...Array(pageInfo?.totalPages || 0).keys()];
 
- // 删除产品的函数
+  // 删除产品的函数
   const handleDelete = async (productId: string) => {
     // 确认删除（避免误操作）
     if (!window.confirm(`确定要删除ID为 ${productId} 的产品吗？`)) {
@@ -72,7 +76,7 @@ const getSizeParam = () => {
   };
 
   const fetchProducts = async () => {
-     axios
+    axios
       .get<ApiResult<Page<Product>>>(
         `http://localhost:8080/api/products/lists`,
         {
@@ -87,14 +91,17 @@ const getSizeParam = () => {
         setPageInfo(response.data.data);
       })
       .catch((err) => console.error(err));
-  }
+  };
 
-  useEffect(() => { fetchProducts()}, [currentPage, pageSize]);
+  useEffect(() => {
+    fetchProducts();
+  }, [currentPage, pageSize]);
   // useEffect(() => {
   //   setProducts(mockProductResult.data.content);
   // }, []);
   return (
     <Fragment>
+      <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
       <table className="table table-primary table-bordered text-center align-middle">
         <colgroup>
           <col style={{ width: "8%" }} />
@@ -143,12 +150,18 @@ const getSizeParam = () => {
                   <button className="btn btn-primary me-2">Edit</button>
                 </Link>
 
-                <button className="btn btn-danger"  onClick={() => handleDelete(product?.productId ?? "")}>Delete</button>  
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDelete(product?.productId ?? "")}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+        </div>
       {pageInfo && pageInfo.totalPages > 1 && (
         <nav className="mt-5">
           <ul className="pagination justify-content-center">
