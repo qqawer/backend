@@ -13,13 +13,13 @@ const AddProduct = () => {
     stock: 0,
     mainImage: '',
     brand: '',
-    status: 1, // 默认启用
+    status: 1, // Enabled by default
     description: ''
   });
   
-  // 状态管理
-  const [isLoading, setIsLoading] = useState<boolean>(false); // 加载状态
-  const [error, setError] = useState<string | null>(null); // 错误信息
+// Status Management
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading status
+  const [error, setError] = useState<string | null>(null); // Error message
   const navigate = useNavigate();
 
   // 处理输入变化
@@ -34,63 +34,60 @@ const AddProduct = () => {
     if (error) setError(null);
   };
 
-  // 提交表单到接口
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission and send the product data to the backend API
+   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // 前端基础验证
+    // Front-end basic validation
     if (!formData.productName.trim()) {
-      setError('请输入产品名称');
+      setError('Please enter the product name');
       return;
     }
     if (formData.price <= 0) {
-      setError('请输入有效的价格（大于0）');
+      setError('Please enter a valid price (greater than 0)');
       return;
     }
     if (formData.stock < 0) {
-      setError('库存不能为负数');
+      setError('Stock cannot be negative');
       return;
     }
+    setIsLoading(true);// Start loading
+    setError(null);// Clear the previous errors
 
-    try {
-      setIsLoading(true); // 开始加载
-      setError(null); // 清除之前的错误
 
-      // 发送 POST 请求（JSON 格式）
-      const response = await axios.post(
+ // Send POST requests
+    axios.post(
         'http://127.0.0.1:8080/api/addProduct',
-        formData, // 请求体（自动转为 JSON）
+        formData, 
         {
-          headers: {
-            'Content-Type': 'application/json' // 明确指定 JSON 格式
-          }
+            headers: { "Content-Type": "application/json" },
         }
-      );
-
-      // 假设接口返回成功状态（根据实际接口调整判断逻辑）
-      if (response.data.code === 200) {
-        alert('产品添加成功！');
-        navigate('/products'); // 跳转回产品列表
-      } else {
-        setError('添加失败：' + (response.data.message || '未知错误'));
-      }
-    } catch (err) {
-      // 捕获网络错误或接口异常
-      if (axios.isAxiosError(err)) {
-        setError(`请求失败：${err.message || '网络错误'}`);
-      } else {
-        setError('发生未知错误，请稍后重试');
-      }
-    } finally {
-      setIsLoading(false); // 结束加载
-    }
+      ).then((response) => {
+        //Determine whether it is successful based on the back-end business code
+        if (response.data.code === 200) {
+          alert('Product added successfully!');
+          navigate('/products'); // Redirect to the product list page
+        } else {
+          setError('Add failed：' + (response.data.message || 'Unknown error'));
+        }
+      })
+     .catch((err) => {
+        //Network or interface anomaly
+        if (axios.isAxiosError(err)) {
+          setError(`Request failed: ${err.message || "Network error"}`);
+        } else {
+          setError("Unknown error, please try again later");
+        }
+      })
+      .finally(() => {
+        setIsLoading(false); // End loading
+      });
   };
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">添加新产品</h2>
+      <h2 className="mb-4">Add New Product</h2>
       
-      {/* 错误提示 */}
+      {/* Error Prompt */}
       {error && (
         <div className="alert alert-danger mb-3" role="alert">
           {error}
@@ -98,10 +95,10 @@ const AddProduct = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        {/* 产品名称 */}
+        {/* Product Name */}
         <div className="mb-3">
           <label htmlFor="productName" className="form-label">
-            产品名称 <span className="text-danger">*</span>
+            Product Name <span className="text-danger">*</span>
           </label>
           <input
             type="text"
@@ -110,15 +107,15 @@ const AddProduct = () => {
             name="productName"
             value={formData.productName}
             onChange={handleInputChange}
-            placeholder="请输入产品名称"
-            disabled={isLoading} // 加载时禁用输入
+            placeholder="Please enter product name"
+            disabled={isLoading} // Disable input when loading
           />
         </div>
 
-        {/* 价格 */}
+        {/* Price */}
         <div className="mb-3">
           <label htmlFor="price" className="form-label">
-            价格（元）<span className="text-danger">*</span>
+            Price（S&#36;）<span className="text-danger">*</span>
           </label>
           <input
             type="number"
@@ -127,17 +124,17 @@ const AddProduct = () => {
             name="price"
             value={formData.price}
             onChange={handleInputChange}
-            placeholder="请输入产品价格"
+            placeholder="Please enter the product price"
             min="0.01"
             step="0.01"
             disabled={isLoading}
           />
         </div>
 
-        {/* 库存 */}
+        {/* Stock */}
         <div className="mb-3">
           <label htmlFor="stock" className="form-label">
-            库存数量 <span className="text-danger">*</span>
+            Stock Quantity <span className="text-danger">*</span>
           </label>
           <input
             type="number"
@@ -146,15 +143,15 @@ const AddProduct = () => {
             name="stock"
             value={formData.stock}
             onChange={handleInputChange}
-            placeholder="请输入库存数量"
+            placeholder="Please enter the stock quantity"
             min="0"
             disabled={isLoading}
           />
         </div>
 
-        {/* 主图URL */}
+        {/* Product Image URL */}
         <div className="mb-3">
-          <label htmlFor="mainImage" className="form-label">主图URL</label>
+          <label htmlFor="mainImage" className="form-label">Product Image URL</label>
           <input
             type="text"
             className="form-control"
@@ -162,15 +159,15 @@ const AddProduct = () => {
             name="mainImage"
             value={formData.mainImage}
             onChange={handleInputChange}
-            placeholder="例如：https://example.com/product.jpg"
+            placeholder="For example: https://example.com/product.jpg"
             disabled={isLoading}
           />
-          <div className="form-text">支持HTTP/HTTPS图片链接，建议尺寸500x500px</div>
+          <div className="form-text"> Supports HTTP/HTTPS image links, recommended size 500x500px</div>
         </div>
 
-        {/* 品牌 */}
+        {/* Brand */}
         <div className="mb-3">
-          <label htmlFor="brand" className="form-label">品牌</label>
+          <label htmlFor="brand" className="form-label">Brand</label>
           <input
             type="text"
             className="form-control"
@@ -178,14 +175,14 @@ const AddProduct = () => {
             name="brand"
             value={formData.brand}
             onChange={handleInputChange}
-            placeholder="请输入品牌名称"
+            placeholder="Please enter the brand name"
             disabled={isLoading}
           />
         </div>
 
-        {/* 状态 */}
+        {/* Status */}
         <div className="mb-3">
-          <label htmlFor="status" className="form-label">状态</label>
+          <label htmlFor="status" className="form-label">Status</label>
           <select
             className="form-select"
             id="status"
@@ -194,34 +191,34 @@ const AddProduct = () => {
             onChange={handleInputChange}
             disabled={isLoading}
           >
-            <option value={1}>启用（可展示）</option>
-            <option value={0}>禁用（不展示）</option>
+            <option value={1}>Enabled (Visible)</option>
+            <option value={0}>Disabled (Not Visible)</option>
           </select>
         </div>
 
-        {/* 产品描述 */}
+        {/* Product Description */}
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">产品描述</label>
+          <label htmlFor="description" className="form-label">Product Description</label>
           <textarea
             className="form-control"
             id="description"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            placeholder="请输入产品详细描述"
+            placeholder="Please enter the product detailed description"
             rows={5}
             disabled={isLoading}
           ></textarea>
         </div>
 
-        {/* 提交按钮 */}
+        {/* Submit Button */}
         <div className="mb-3">
           <button 
             type="submit" 
             className="btn btn-primary me-3"
             disabled={isLoading}
           >
-            {isLoading ? '提交中...' : '保存产品'}
+            {isLoading ? 'Submitting...' : 'Save Product'}
           </button>
           <button
             type="button"
@@ -229,7 +226,7 @@ const AddProduct = () => {
             onClick={() => navigate('/products')}
             disabled={isLoading}
           >
-            取消（返回列表）
+             Cancel (Return to Product List)
           </button>
         </div>
       </form>

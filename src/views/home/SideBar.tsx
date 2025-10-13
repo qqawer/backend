@@ -7,35 +7,23 @@ function SideBar() {
 
 
   const menuItems = [
-    // { name: "Home", icon: "home", path: "/" ,end:true},
     { name: "Products", icon: "grid", path: "/products" ,end:true},
     { name: "AddProduct", icon: "people-circle", path: "/products/add" ,end:true},
   ];
 
   return (
       <Fragment>
-      {/* 左侧 Sidebar */}
+      {/* Left Sidebar */}
       <div
         className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark min-vh-100"
         style={{ width: "280px" }}
       >
-        {/* <a
-          href="#"
-          className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
-        >
-          <svg className="bi pe-none me-2" width="40" height="32">
-            <use xlinkHref="#bootstrap"></use>
-          </svg>
-          <span className="fs-4">Sidebar</span>
-        </a>
-        <hr /> */}
-
         <ul className="nav nav-pills flex-column mb-auto">
           {menuItems.map((item) => (
             <li className="nav-item" key={item.name}>
               <NavLink
                 to={item.path}
-                end={item.end}   // 首页只在完全匹配时高亮
+                end={item.end}   
                 className={({ isActive }) =>
                   `nav-link ${isActive ? "active" : "text-white"}`
                 }

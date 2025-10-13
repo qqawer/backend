@@ -2,7 +2,6 @@ import { useState, useEffect, Fragment } from "react";
 import axios from "axios";
 import type { ApiResult, Page, Product } from "../../types/product";
 import { Link, useSearchParams } from "react-router-dom";
-// import { mockProductResult } from "../../mockData";
 
 function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -11,71 +10,67 @@ function ProductList() {
   const currentPage = searchParams.has("page")
     ? Number(searchParams.get("page"))
     : 0;
-
-  // 修正 getPageParam 函数（确保页码有效）
+// Correct the getPageParam function (ensure page numbers are valid)
   const getPageParam = () => {
-    // 过滤非数字/无效的页码
+  // Filter non-numeric/invalid page numbers
     const validCurrentPage =
       typeof currentPage === "number" && !isNaN(currentPage) ? currentPage : 0;
 
     if (!pageInfo) {
-      return Math.max(0, validCurrentPage); // 确保页码不小于0
+      return Math.max(0, validCurrentPage); // Ensure page number is not less than 0
     }
     return Math.max(0, Math.min(validCurrentPage, pageInfo.totalPages - 1));
   };
 
-  // 修正 pageSize 的获取方式（关键！）
+  // Correct the pageSize retrieval logic (ensure valid values)
   const pageSize = searchParams.has("size")
     ? Number(searchParams.get("size"))
     : undefined;
 
-  // 修正 getSizeParam 函数（确保无效值被过滤）
+  // Correct the getSizeParam function (ensure invalid values are filtered)
   const getSizeParam = () => {
-    // 过滤非数字/无效的 size 值
+    // Filter non-numeric/invalid size values
     const validPageSize =
       typeof pageSize === "number" && !isNaN(pageSize) && pageSize > 0
         ? pageSize
         : undefined;
-
-    // 优先用 URL 中的有效 size → 再用后端返回的 size → 最后用默认值 10
+    // Prioritize valid size from URL → backend size → default size 10
     const size = validPageSize ?? pageInfo?.size ?? 10;
 
-    // 范围限制（保持原逻辑，但此时 size 已经是有效値）
+    // Range limit (ensure size is within valid range [5-100])
     return Math.max(5, Math.min(size, 100));
   };
 
   const pageNumbers = [...Array(pageInfo?.totalPages || 0).keys()];
 
-  // 删除产品的函数
-  const handleDelete = async (productId: string) => {
-    // 确认删除（避免误操作）
+  // Delete the function of the product
+  const handleDelete = (productId: string) => {
+    // Confirm deletion
     if (!window.confirm(`确定要删除ID为 ${productId} 的产品吗？`)) {
       return;
     }
-
-    try {
-      // 发送DELETE请求到后端删除接口
-      const response = await axios.post<ApiResult<string>>(
-        `http://localhost:8080/api/deleteProduct/${productId}` // 假设后端接口路径是这个
-      );
-
-      // 根据后端返回的code判断是否成功（这里用200代表成功）
-      if (response.data.code === 200) {
-        alert("删除成功！");
-        // 重新获取当前页数据，刷新列表
-        fetchProducts();
-      } else {
-        // 后端返回业务错误（如产品不存在）
-        alert(`删除失败：${response.data.message}`);
-      }
-    } catch (err) {
-      // 网络错误或服务器异常
-      console.error("删除请求失败：", err);
-      alert("删除失败，请稍后重试！");
-    }
+    // Send DELETE request to backend delete interface
+    axios
+      .post<ApiResult<string>>(`http://localhost:8080/api/deleteProduct/${productId}`)
+      .then((response) => {
+        // Determine whether it was successful based on the code returned from the back end
+        if (response.data.code === 200) {
+          alert("Deleted successfully!");
+          // Re-obtain the current page data and refresh the list
+          fetchProducts();
+        } else {
+          // Back-end returns business errors
+          alert(`删除失败：${response.data.message}`);
+        }
+      })
+      .catch((err) => {
+        // 网络错误或服务器异常
+        console.error("Delete request failed：", err);
+        alert("Delete failed, please try again later!");
+      });
   };
-
-  const fetchProducts = async () => {
+// Function to obtain product list data
+const fetchProducts = () => {
     axios
       .get<ApiResult<Page<Product>>>(
         `http://localhost:8080/api/products/lists`,
@@ -92,13 +87,10 @@ function ProductList() {
       })
       .catch((err) => console.error(err));
   };
-
+  // Obtain product list data when component mounts or page parameters change
   useEffect(() => {
     fetchProducts();
   }, [currentPage, pageSize]);
-  // useEffect(() => {
-  //   setProducts(mockProductResult.data.content);
-  // }, []);
   return (
     <Fragment>
       <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -165,19 +157,19 @@ function ProductList() {
       {pageInfo && pageInfo.totalPages > 1 && (
         <nav className="mt-5">
           <ul className="pagination justify-content-center">
-            {/* 上一页 */}
+            {/* Previous page */}
             <li className={`page-item ${pageInfo?.first ? "disabled" : ""}`}>
               <Link
                 className="page-link"
                 to={`/products/lists?page=${getPageParam()}&size=${getSizeParam()}`}
-                // 当为第一页时禁用链接
+                // Disable link when on the first page
                 onClick={(e) => pageInfo?.first && e.preventDefault()}
               >
                 Previous
               </Link>
             </li>
 
-            {/* 数字页码 */}
+            {/* Numeric page numbers */}
             {pageNumbers.map((i) => (
               <li
                 key={i}
@@ -194,14 +186,14 @@ function ProductList() {
               </li>
             ))}
 
-            {/* 下一页 */}
+            {/* Next page */}
             <li className={`page-item ${pageInfo?.last ? "disabled" : ""}`}>
               <Link
                 className="page-link"
                 to={`/products/?page=${
                   getPageParam() + 1
                 }&size=${getSizeParam()}`}
-                // 当为最后一页时禁用链接
+                // Disable link when on the last page
                 onClick={(e) => pageInfo?.last && e.preventDefault()}
               >
                 Next
@@ -214,69 +206,3 @@ function ProductList() {
   );
 }
 export default ProductList;
-/*
-export default ProductList;
-import { useState, useEffect } from "react";
-import axios from "axios";
-import type { ApiResult, Page, Product } from "./product";
-
-function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]);
-  useEffect(() => {
-    axios
-    .get<ApiResult<Page<Product>>>('http://127.0.0.1:8080/products/list')
-    .then(res => {
-      // 现在 TS 知道 res.data.data.content 才是 Product[]
-      setProducts(res.data.data.content);
-    })
-    .catch(err => console.error(err));
-  }, []);
-
-  return (
-    <>
-      <table className=" table table-success table-striped">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">名称</th>
-            <th scope="col">价格</th>
-            <th scope="col">库存</th>
-            <th scope="col">品牌</th>
-            <th scope="col">状态</th>
-            <th scope="col">描述</th>
-            <th scope="col">头像</th>
-            <th scope="col">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.productId}>
-              <td>{product.productId}</td>
-              <td>{product.productName}</td>
-              <td>{product.price}</td>
-              <td>{product.stock}</td>
-              <td>{product.brand}</td>
-              <td>{product.status === 1 ? "已上架" : "未上架"}</td>
-              <td>{product.description}</td>
-              <td>
-                <img
-                  src={product.mainImage}
-                  alt={product.productName}
-                  width="50"
-                  height="50"
-                />
-              </td>
-              <td>
-                <button className="btn btn-primary">编辑</button>
-                <button className="btn btn-danger">删除</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  );
-}
-
-export default ProductList;
-*/

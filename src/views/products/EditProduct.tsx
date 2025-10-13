@@ -1,156 +1,157 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import type { ApiResult, Product } from '../../types/product';
-
-
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import type { ApiResult, Product } from "../../types/product";
 
 function EditProduct() {
-  const { id } = useParams(); // id 就是 "550e8400-e29b-41d4-a716-446655440000"
-  console.log(id); // 打印确认
+  const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
-    // 状态管理
-  const [isLoading, setIsLoading] = useState<boolean>(false); // 加载状态
-  const [error, setError] = useState<string | null>(null); // 错误信息
+  // Status Management
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading status
+  const [error, setError] = useState<string | null>(null); // Error message
   const navigate = useNavigate();
 
-   useEffect(() => {
+  useEffect(() => {
     if (!id) {
-      setError('产品ID不存在');
+      setError("Product ID does not exist");
       return;
     }
     const fetchProduct = async () => {
       setIsLoading(true);
-      try {
-        const response = await axios.get<ApiResult<Product>>(`http://localhost:8080/api/products/${id}`);
-        if (response.data.code === 200) {
-          setProduct(response.data.data); // 请求成功后，product 从 null 变为具体数据
-        } else {
-          setError('获取产品失败');
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-        setError(`请求失败：${err.message || '网络错误'}`);
-      } else {
-        setError('发生未知错误，请稍后重试');
-      }
-      } finally {
-        setIsLoading(false);
-      }
+      axios
+        .get<ApiResult<Product>>(`http://localhost:8080/api/products/${id}`)
+        .then((response) => {
+          if (response.data.code === 200) {
+            setProduct(response.data.data);
+          } else {
+            setError("Failed to obtain the product");
+          }
+        })
+        .catch((err) => {
+          if (axios.isAxiosError(err)) {
+            setError(`Request failed: ${err.message || "Network error"}`);
+          } else {
+            setError("Unknown error, please try again later");
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     };
     fetchProduct();
   }, [id]);
 
-// 处理表单输入变化：直接修改 product 状态中的对应字段
+  // Handle changes in form input and synchronize them in real time to the "product" state
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
-    if (!product) return; // 产品数据未加载时不处理
+    if (!product) return; // If product data is not loaded, do not process
 
     const { name, value } = e.target;
-    setProduct(prev => {
+    setProduct((prev) => {
       if (!prev) return prev;
-      // 针对数字类型字段（price、stock、status）做类型转换
+      // For numeric fields (price, stock, status), convert them to numbers
       return {
         ...prev,
-        [name]: ['price', 'stock', 'status'].includes(name) 
-          ? Number(value) 
-          : value
+        [name]: ["price", "stock", "status"].includes(name)
+          ? Number(value)
+          : value,
       };
     });
-    setError(null); // 输入时清空错误提示
+    setError(null); // Clear the error prompt when inputting
   };
-  // 提交表单到接口
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission and send the product data to the backend API
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // 前端基础验证
+    // Front-end basic validation
     if (!product?.productName.trim()) {
-      setError('请输入产品名称');
+      setError("Please enter the product name");
       return;
     }
     if (product.price <= 0) {
-      setError('请输入有效的价格（大于0）');
+      setError("Please enter a valid price (greater than 0)");
       return;
     }
     if (product.stock < 0) {
-      setError('库存不能为负数');
+      setError("Stock cannot be negative");
       return;
     }
 
-    try {
-      setIsLoading(true); // 开始加载
-      setError(null); // 清除之前的错误
+    setIsLoading(true);// Start loading
+    setError(null);// Clear the previous errors
 
-      // 发送 POST 请求（JSON 格式）
-       const response = await axios.post(
-         'http://127.0.0.1:8080/api/updateProduct',
-        product, // 直接使用 product 作为请求体
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-
-      // 假设接口返回成功状态（根据实际接口调整判断逻辑）
-      if (response.data.code === 200) {
-        alert('产品添加成功！');
-        navigate('/products'); // 跳转回产品列表
-      } else {
-        setError('添加失败：' + (response.data.message || '未知错误'));
-      }
-    } catch (err) {
-      // 捕获网络错误或接口异常
-      if (axios.isAxiosError(err)) {
-        setError(`请求失败：${err.message || '网络错误'}`);
-      } else {
-        setError('发生未知错误，请稍后重试');
-      }
-    } finally {
-      setIsLoading(false); // 结束加载
-    }
+   // Send POST requests
+    axios
+      .post("http://127.0.0.1:8080/api/updateProduct", product, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        //Determine whether it is successful based on the back-end business code
+        if (response.data.code === 200) {
+          alert("Product updated successfully!");
+          navigate("/products");// Redirect to the product list page
+        } else {
+          setError("Update failed：" + (response.data.message || "Unknown error"));
+        }
+      })
+      .catch((err) => {
+        //Network or interface anomaly
+        if (axios.isAxiosError(err)) {
+          setError(`Request failed: ${err.message || "Network error"}`);
+        } else {
+          setError("Unknown error, please try again later");
+        }
+      })
+      .finally(() => {
+        setIsLoading(false); // End loading
+      });
   };
-if (isLoading) {
-    return <div className="container mt-4">加载产品数据中...</div>;
+  if (isLoading) {
+    return <div className="container mt-4">Loading product data...</div>;
   }
-  // product 为 null（且不在加载中）：显示错误提示
+// product is null (and not loading) : Display an error prompt
   if (!product) {
     return (
       <div className="container mt-4 alert alert-warning">
-        {error || '产品数据未加载，请返回列表重试'}
-        <button 
+        {error || "Product data failed to load, please return to the list and try again"}
+        <button
           className="btn btn-secondary ms-3"
-          onClick={() => navigate('/products')}
+          onClick={() => navigate("/products")}
         >
-          返回列表
+          Return to the list
         </button>
       </div>
     );
   }
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">编辑产品</h2>
-      
-      {/* 错误提示 */}
+      <h2 className="mb-4">Edit Product</h2>
+
+      {/* Error prompt */}
       {error && (
         <div className="alert alert-danger mb-3" role="alert">
           {error}
         </div>
       )}
       <form onSubmit={handleSubmit}>
-        {/* 产品ID（只读，展示用） */}
+        {/* Product ID (read-only, displayed only) */}
         <div className="mb-3">
-          <label className="form-label">产品ID</label>
+          <label className="form-label">Product ID</label>
           <input
             type="text"
             className="form-control"
             value={product.productId}
-            readOnly // ID 通常不允许修改
+            readOnly
             disabled
           />
         </div>
 
-        {/* 产品名称 */}
+        {/* Product Name */}
         <div className="mb-3">
           <label htmlFor="productName" className="form-label">
-            产品名称 <span className="text-danger">*</span>
+            Product Name <span className="text-danger">*</span>
           </label>
           <input
             type="text"
@@ -159,14 +160,14 @@ if (isLoading) {
             name="productName"
             value={product.productName}
             onChange={handleInputChange}
-            disabled={isLoading} // 加载时禁用输入
+            disabled={isLoading} // Disable input when loading
           />
         </div>
 
-        {/* 价格 */}
+        {/* Price */}
         <div className="mb-3">
           <label htmlFor="price" className="form-label">
-            价格（元）<span className="text-danger">*</span>
+            Price（S&#36;）<span className="text-danger">*</span>
           </label>
           <input
             type="number"
@@ -181,7 +182,7 @@ if (isLoading) {
           />
         </div>
 
-        {/* 库存 */}
+        {/* Stock Quantity */}
         <div className="mb-3">
           <label htmlFor="stock" className="form-label">
             库存数量 <span className="text-danger">*</span>
@@ -198,9 +199,11 @@ if (isLoading) {
           />
         </div>
 
-        {/* 主图URL */}
+        {/* Product Image URL */}
         <div className="mb-3">
-          <label htmlFor="mainImage" className="form-label">主图URL</label>
+          <label htmlFor="mainImage" className="form-label">
+            Product Image URL
+          </label>
           <input
             type="text"
             className="form-control"
@@ -210,12 +213,16 @@ if (isLoading) {
             onChange={handleInputChange}
             disabled={isLoading}
           />
-          <div className="form-text">支持HTTP/HTTPS图片链接，建议尺寸500x500px</div>
+          <div className="form-text">
+            Supports HTTP/HTTPS image links, recommended size 500x500px
+          </div>
         </div>
 
-        {/* 品牌 */}
+        {/* Brand */}
         <div className="mb-3">
-          <label htmlFor="brand" className="form-label">品牌</label>
+          <label htmlFor="brand" className="form-label">
+            Brand
+          </label>
           <input
             type="text"
             className="form-control"
@@ -227,9 +234,11 @@ if (isLoading) {
           />
         </div>
 
-        {/* 状态 */}
+        {/* Status */}
         <div className="mb-3">
-          <label htmlFor="status" className="form-label">状态</label>
+          <label htmlFor="status" className="form-label">
+            Status
+          </label>
           <select
             className="form-select"
             id="status"
@@ -238,14 +247,16 @@ if (isLoading) {
             onChange={handleInputChange}
             disabled={isLoading}
           >
-            <option value={1}>启用（可展示）</option>
-            <option value={0}>禁用（不展示）</option>
+            <option value={1}>Enabled (Visible)</option>
+            <option value={0}>Disabled (Not Visible)</option>
           </select>
         </div>
 
-        {/* 产品描述 */}
+        {/* Product Description */}
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">产品描述</label>
+          <label htmlFor="description" className="form-label">
+            Product Description
+          </label>
           <textarea
             className="form-control"
             id="description"
@@ -257,27 +268,27 @@ if (isLoading) {
           ></textarea>
         </div>
 
-        {/* 提交按钮 */}
+        {/* Submit Button */}
         <div className="mb-3">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary me-3"
             disabled={isLoading}
           >
-            {isLoading ? '提交中...' : '保存产品'}
+            {isLoading ? "Submission in progress..." : "Save the product"}
           </button>
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => navigate('/products')}
+            onClick={() => navigate("/products")}
             disabled={isLoading}
           >
-            取消（返回列表）
+            Cancel (Return to Product List)
           </button>
         </div>
       </form>
     </div>
   );
-};
+}
 
 export default EditProduct;
