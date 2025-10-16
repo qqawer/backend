@@ -9,14 +9,14 @@ export interface Product {
     description: string;
   }
 
-// 分页排序信息接口
+// Pagination and sorting information interface
 export interface Sort {
   empty: boolean;
   sorted: boolean;
   unsorted: boolean;
 }
 
-// 分页参数接口
+// Pagination parameters interface
 export interface Pageable {
   pageNumber: number;
   pageSize: number;
@@ -26,19 +26,19 @@ export interface Pageable {
   unpaged: boolean;
 }
 
-// 分页结果接口完善
+// Pagination result interface
 export interface Page<T> {
   content: T[];
-  pageable: Pageable; // 替换为具体的Pageable接口
+  pageable: Pageable; // Replace with the actual Pageable interface
   totalElements: number;
   totalPages: number;
   size: number;
   number: number;
-  sort: Sort; // 补充sort字段定义
+  sort: Sort; // Add sort field definition
   first: boolean;
   last: boolean;
   empty: boolean;
-  numberOfElements: number; // 补充该字段
+  numberOfElements: number; // Add this field
 }
 
   

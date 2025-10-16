@@ -46,7 +46,7 @@ function ProductList() {
   // Delete the function of the product
   const handleDelete = (productId: string) => {
     // Confirm deletion
-    if (!window.confirm(`确定要删除ID为 ${productId} 的产品吗？`)) {
+    if (!window.confirm(`Are you sure you want to delete the product with ID ${productId}?`)) {
       return;
     }
     // Send DELETE request to backend delete interface
@@ -60,11 +60,11 @@ function ProductList() {
           fetchProducts();
         } else {
           // Back-end returns business errors
-          alert(`删除失败：${response.data.message}`);
+          alert(`Fail to delete：${response.data.message}`);
         }
       })
       .catch((err) => {
-        // 网络错误或服务器异常
+        // Network errors or server exceptions
         console.error("Delete request failed：", err);
         alert("Delete failed, please try again later!");
       });

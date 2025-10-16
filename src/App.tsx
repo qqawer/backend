@@ -9,9 +9,9 @@ function App() {
     <div className="d-flex flex-column">
       <Header />
       <div className="d-flex flex-grow-1 overflow-hidden">
-        <SideBar />                       {/* 始终存在 */}
+        <SideBar />                    
         <main className="flex-grow-1 overflow-auto">
-          <Outlet />                      {/* 只替换这里 */}
+          <Outlet />                    
         </main>
       </div>
     </div>

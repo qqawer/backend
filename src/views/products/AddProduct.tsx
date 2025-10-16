@@ -6,7 +6,7 @@ import type { Product } from '../../types/product';
 
 
 const AddProduct = () => {
-  // 表单状态
+  // Form state
   const [formData, setFormData] = useState<Product>({
     productName: '',
     price: 0,
@@ -22,7 +22,7 @@ const AddProduct = () => {
   const [error, setError] = useState<string | null>(null); // Error message
   const navigate = useNavigate();
 
-  // 处理输入变化
+  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === 'price' || name === 'stock') {
@@ -30,7 +30,7 @@ const AddProduct = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    // 清除错误提示
+    // Clear error messages
     if (error) setError(null);
   };
 

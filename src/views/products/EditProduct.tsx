@@ -185,7 +185,7 @@ function EditProduct() {
         {/* Stock Quantity */}
         <div className="mb-3">
           <label htmlFor="stock" className="form-label">
-            库存数量 <span className="text-danger">*</span>
+            Stock Quantity <span className="text-danger">*</span>
           </label>
           <input
             type="number"
