@@ -16,7 +16,7 @@ function EditProduct() {
       setError("Product ID does not exist");
       return;
     }
-    const fetchProduct = async () => {
+    const fetchProduct =() => {
       setIsLoading(true);
       axios
         .get<ApiResult<Product>>(`/api/products/${id}`)
