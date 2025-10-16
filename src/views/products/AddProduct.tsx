@@ -56,7 +56,7 @@ const AddProduct = () => {
 
  // Send POST requests
     axios.post(
-        'http://127.0.0.1:8080/api/addProduct',
+        '/api/addProduct',
         formData, 
         {
             headers: { "Content-Type": "application/json" },

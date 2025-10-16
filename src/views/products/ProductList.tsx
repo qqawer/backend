@@ -73,7 +73,7 @@ function ProductList() {
 const fetchProducts = () => {
     axios
       .get<ApiResult<Page<Product>>>(
-        `http://localhost:8080/api/products/lists`,
+        `/api/products/lists`,
         {
           params: {
             page: currentPage,

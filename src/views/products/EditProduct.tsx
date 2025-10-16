@@ -19,7 +19,7 @@ function EditProduct() {
     const fetchProduct = async () => {
       setIsLoading(true);
       axios
-        .get<ApiResult<Product>>(`http://localhost:8080/api/products/${id}`)
+        .get<ApiResult<Product>>(`/api/products/${id}`)
         .then((response) => {
           if (response.data.code === 200) {
             setProduct(response.data.data);
@@ -84,7 +84,7 @@ function EditProduct() {
 
    // Send POST requests
     axios
-      .post("http://127.0.0.1:8080/api/updateProduct", product, {
+      .post("/api/updateProduct", product, {
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
